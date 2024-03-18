@@ -2,49 +2,60 @@
 #include<vector>
 using namespace std;
 
+// 定义一个函数，用于判断一个点是否被1完全围绕
 bool isEnclosedByOnes(const vector<vector<int>>& matrix, int x, int y) {
     int n = matrix.size();
     bool enclosedHorizontally = false, enclosedVertically = false;
     
-    // Horizontal check (left and right)
+    // 水平方向检查（左右两侧）
     bool left = false, right = false;
+    // 向左检查，直到遇到1或者达到边界
     for (int j = y - 1; j >= 0; --j) {
         if (matrix[x][j] == 1) {
             left = true;
             break;
         }
     }
+    // 向右检查，直到遇到1或者达到边界
     for (int j = y + 1; j < n; ++j) {
         if (matrix[x][j] == 1) {
             right = true;
             break;
         }
     }
+    // 只有当左右两侧都有1时，才认为在水平方向上被1围绕
     enclosedHorizontally = left && right;
     
-    // Vertical check (up and down)
+    // 垂直方向检查（上下两侧）
     bool up = false, down = false;
+    // 向上检查，直到遇到1或者达到边界
     for (int i = x - 1; i >= 0; --i) {
         if (matrix[i][y] == 1) {
             up = true;
             break;
         }
     }
+    // 向下检查，直到遇到1或者达到边界
     for (int i = x + 1; i < n; ++i) {
         if (matrix[i][y] == 1) {
             down = true;
             break;
         }
     }
+    // 只有当上下两侧都有1时，才认为在垂直方向上被1围绕
     enclosedVertically = up && down;
     
+    // 当一个点同时在水平和垂直方向上被1围绕时，返回true
     return enclosedHorizontally && enclosedVertically;
 }
 
 int main() {
     int n;
+    // 输入方阵的大小
     cin >> n;
+    // 定义一个二维向量来存储方阵
     vector<vector<int>> matrix(n, vector<int>(n));
+    // 输入方阵中的元素
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             cin >> matrix[i][j];
@@ -52,17 +63,17 @@ int main() {
     }
 
     int area = 0;
+    // 遍历方阵中的每个元素
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
+            // 如果当前元素是0，并且被1完全围绕，则增加面积
             if (matrix[i][j] == 0 && isEnclosedByOnes(matrix, i, j)) {
                 area++;
             }
         }
     }
 
+    // 输出被1围绕的0的数量，即小岛的面积
     cout << area << endl;
     return 0;
 }
-
-
-
