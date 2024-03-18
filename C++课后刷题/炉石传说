@@ -1,0 +1,115 @@
+#include <iostream>
+#include <vector>
+#include <sstream>
+using namespace std;
+
+// 定义表示随从的类
+class Minion {
+public:
+    int attack;
+    int health;
+
+    // 构造函数初始化随从的攻击力和生命值
+    Minion(int attack, int health) : attack(attack), health(health) {}
+};
+
+// 定义表示玩家的类
+class Player {
+public:
+    int health; // 玩家的生命值
+    vector<Minion> minions; // 玩家的随从列表
+
+    // 构造函数初始化玩家的生命值
+    Player() : health(30) {}
+};
+
+// 定义控制游戏逻辑的类
+class Game {
+private:
+    Player players[2]; // 两位玩家
+    int current_player; // 当前回合的玩家编号，0 或 1
+
+public:
+    // 构造函数初始化游戏，设置第一位玩家为当前回合的玩家
+    Game() : current_player(0) {}
+
+    // 在指定位置召唤随从
+    void summon(int position, int attack, int health) {
+        players[current_player].minions.insert(players[current_player].minions.begin() + position - 1, Minion(attack, health));
+    }
+
+    // 随从攻击逻辑
+    void attack(int attacker_index, int defender_index) {
+        Minion& attacker = players[current_player].minions[attacker_index - 1];
+        if (defender_index == 0) { // 攻击对方英雄
+            players[1 - current_player].health -= attacker.attack;
+        }
+        else { // 攻击对方随从
+            Minion& defender = players[1 - current_player].minions[defender_index - 1];
+            defender.health -= attacker.attack;
+            attacker.health -= defender.attack;
+
+            // 移除生命值不足的随从
+            if (defender.health <= 0) {
+                players[1 - current_player].minions.erase(players[1 - current_player].minions.begin() + defender_index - 1);
+            }
+            if (attacker.health <= 0) {
+                players[current_player].minions.erase(players[current_player].minions.begin() + attacker_index - 1);
+            }
+        }
+    }
+
+    // 结束当前玩家的回合，切换到另一位玩家
+    void endTurn() {
+        current_player = 1 - current_player;
+    }
+
+    // 解析并处理输入的命令
+    void processCommand(const string& command) {
+        istringstream iss(command);
+        string action;
+        iss >> action;
+
+        if (action == "summon") {
+            int position, attack, health;
+            iss >> position >> attack >> health;
+            summon(position, attack, health);
+        }
+        else if (action == "attack") {
+            int attacker_index, defender_index;
+            iss >> attacker_index >> defender_index;
+            attack(attacker_index, defender_index);
+        }
+        else if (action == "end") {
+            endTurn();
+        }
+    }
+
+    // 输出游戏的当前状态
+    void outputState() {
+        int winner = 0;
+        if (players[0].health <= 0) winner = -1;
+        else if (players[1].health <= 0) winner = 1;
+
+        cout << winner << endl;
+        for (int i = 0; i < 2; ++i) {
+            cout << players[i].health << endl;
+            cout << players[i].minions.size();
+            for (const Minion& minion : players[i].minions) {
+                cout << " " << minion.health;
+            }
+            cout << endl;
+        }
+    }  
+};
+
+// 主函数
+int main() {
+    Game game;
+    string command;
+    while (getline(cin, command) && !command.empty()) { // 从标准输入读取命令直到空行
+        game.processCommand(command);
+    }
+    game.outputState(); // 输出游戏最终状态
+    return 0;
+}
