@@ -1,0 +1,68 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+bool isEnclosedByOnes(const vector<vector<int>>& matrix, int x, int y) {
+    int n = matrix.size();
+    bool enclosedHorizontally = false, enclosedVertically = false;
+    
+    // Horizontal check (left and right)
+    bool left = false, right = false;
+    for (int j = y - 1; j >= 0; --j) {
+        if (matrix[x][j] == 1) {
+            left = true;
+            break;
+        }
+    }
+    for (int j = y + 1; j < n; ++j) {
+        if (matrix[x][j] == 1) {
+            right = true;
+            break;
+        }
+    }
+    enclosedHorizontally = left && right;
+    
+    // Vertical check (up and down)
+    bool up = false, down = false;
+    for (int i = x - 1; i >= 0; --i) {
+        if (matrix[i][y] == 1) {
+            up = true;
+            break;
+        }
+    }
+    for (int i = x + 1; i < n; ++i) {
+        if (matrix[i][y] == 1) {
+            down = true;
+            break;
+        }
+    }
+    enclosedVertically = up && down;
+    
+    return enclosedHorizontally && enclosedVertically;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int>> matrix(n, vector<int>(n));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cin >> matrix[i][j];
+        }
+    }
+
+    int area = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (matrix[i][j] == 0 && isEnclosedByOnes(matrix, i, j)) {
+                area++;
+            }
+        }
+    }
+
+    cout << area << endl;
+    return 0;
+}
+
+
+
