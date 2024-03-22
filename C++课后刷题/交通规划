@@ -1,0 +1,85 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <cstring>
+using namespace std;
+
+// 定义边的结构体，包括目标顶点和成本
+typedef struct edge{
+    int vertex;
+    long long cost;
+    edge(int v,long long c){
+        vertex = v;
+        cost = c;
+    }
+}Edge;
+
+// 定义比较函数，用于优先队列中，以成本为基准进行比较
+struct cmp{
+    bool operator() (Edge e1,Edge e2){
+        return e1.cost>e2.cost;
+    }
+};
+
+const long long MAX = 0x7ffffff; // 定义最大值，用于初始化
+
+int N, M; // N为顶点数，M为边数
+int s, e; // s为起始顶点，e为终止顶点
+long long c, ans; // c为成本，ans为总成本
+vector<Edge> edges[100001]; // 邻接表表示图
+int collect[100001]; // 标记数组，表示顶点是否已经处理过
+long long dist[100001]; // 存储从首都到各顶点的最短距离
+long long cost[100001]; // 存储到达每个顶点的最短路径的成本
+
+// Dijkstra算法的实现
+void Dijikstra(int vertex)
+{
+    dist[vertex] = cost[vertex] = 0; // 初始化首都的距离和成本为0
+    priority_queue<Edge,vector<Edge>,cmp> q; // 优先队列，用于选择最小成本的边
+    q.push(Edge(vertex,0)); // 将首都入队
+    while(!q.empty()){
+        Edge tmp = q.top(); // 取出队列顶部元素
+        q.pop();
+        int v = tmp.vertex;
+        if(!collect[v]){ // 如果该顶点未处理
+            collect[v] = 1; // 标记为已处理
+            for(int i = 0 ; i < edges[v].size() ; i++){ // 遍历所有相邻的边
+                int vv = edges[v][i].vertex; // 相邻顶点
+                long long c = edges[v][i].cost; // 边的成本
+                if(collect[vv]){ // 如果相邻顶点已处理，跳过
+                    continue;
+                }
+                if(dist[vv] > dist[v]+c){ // 如果找到更短的路径
+                    dist[vv] = dist[v]+c; // 更新最短距离
+                    cost[vv] = c; // 更新到达顶点的成本
+                    q.push(Edge(vv,dist[vv])); // 将更新后的状态入队
+                }
+                if(dist[vv] == dist[v]+c){ // 如果存在相同长度的路径
+                    cost[vv] = min(c,cost[vv]); // 选择成本更小的路径
+                }
+            }
+        }
+    }
+}
+
+int main()
+{
+    while(cin>>N>>M){ // 循环读取每组测试数据
+        ans = 0; // 初始化总成本
+        for(int i = 1 ; i <= N ; i++){ // 初始化数组
+            collect[i] = 0;
+            dist[i] = MAX;
+            cost[i] = MAX;
+        }
+        for(int i = 0 ; i < M ; i++){ // 读取边信息
+            cin>>s>>e>>c;
+            edges[s].push_back(Edge(e,c)); // 构建图的邻接表
+            edges[e].push_back(Edge(s,c)); // 无向图，两个方向都要添加
+        }
+        Dijikstra(1); // 从首都开始执行Dijkstra算法
+        for(int i = 1 ; i <= N ; i++){ // 累加最短路径上的成本
+            ans += cost[i];
+        }
+        cout<<ans<<endl;
+    }
+}
